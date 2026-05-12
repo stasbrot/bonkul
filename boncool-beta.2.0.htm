@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BĄKÓL 🐝</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800;900&family=Nunito:wght@600;700;900&display=swap');
+
+:root {
+  --gold: #f5c400;
+  --gold-dark: #b88a00;
+  --honey: #ff9900;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: radial-gradient(ellipse at 60% 30%, #ffe08a 0%, #ff9900 40%, #ff5500 100%);
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Nunito', sans-serif;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* =========== TITLE =========== */
+#title-screen {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 200;
+  overflow: hidden;
+  gap: 0;
+}
+.title-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(160deg, #0a2240 0%, #0d3d6e 35%, #1a6fa8 65%, #2ec0f9 100%);
+  z-index: 0;
+}
+.star { position:absolute; background:#fff; border-radius:50%; animation: twinkle 2s ease-in-out infinite; }
+@keyframes twinkle { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
+.title-ground {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 28%;
+  background: linear-gradient(180deg, #4ecb3e 0%, #2e8f22 100%);
+  z-index: 1;
+  border-radius: 60% 60% 0 0 / 20% 20% 0 0;
+}
+.title-sun {
+  position: absolute;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, #fff7a0, #ffd700 50%, #ff9900);
+  border-radius: 50%;
+  top: 6%; right: 12%;
+  z-index: 1;
+  box-shadow: 0 0 60px 20px rgba(255,200,0,0.4);
+  animation: sun-pulse 3s ease-in-out infinite;
+}
+@keyframes sun-pulse { 0%,100%{box-shadow:0 0 60px 20px rgba(255,200,0,0.4)} 50%{box-shadow:0 0 90px 40px rgba(255,220,0,0.6)} }
+.title-content { position: relative; z-index: 5; display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom: 28%; }
+.title-emoji { font-size: 5.5rem; animation: float 2.2s ease-in-out infinite; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3)); }
+@keyframes float { 0%,100%{transform:translateY(0) rotate(-4deg) scale(1)} 50%{transform:translateY(-20px) rotate(4deg) scale(1.06)} }
+h1.game-title {
+  font-family: 'Baloo 2', cursive;
+  font-size: clamp(3.5rem, 14vw, 7rem);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 4px 0 #b88a00, 0 8px 0 rgba(0,0,0,0.2), 0 0 60px rgba(255,220,0,0.6);
+  letter-spacing: 6px;
+  animation: title-bob 2s ease-in-out infinite;
+  line-height: 1;
+}
+@keyframes title-bob { 0%,100%{transform:rotate(-1deg)} 50%{transform:rotate(1deg)} }
+.title-tagline {
+  font-size: 1rem; font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(0,0,0,0.2);
+  padding: 6px 20px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.title-legend {
+  display: flex; flex-wrap: wrap; gap: 7px; justify-content: center;
+  max-width: 330px;
+  margin-top: 4px;
+}
+.legend-item {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 12px;
+  padding: 5px 11px;
+  font-size: 0.77rem;
+  color: #fff;
+  font-weight: 700;
+  display: flex; align-items: center; gap: 5px;
+}
+.legend-item.bad { border-color: rgba(255,80,80,0.5); background: rgba(255,60,60,0.18); }
+.legend-item.honey { border-color: rgba(255,215,0,0.6); background: rgba(255,200,0,0.22); }
+.legend-item.miss { border-color: rgba(255,140,0,0.5); background: rgba(255,140,0,0.15); }
+
+.btn {
+  border: none; border-radius: 60px;
+  padding: 14px 50px;
+  font-family: 'Baloo 2', cursive;
+  font-size: 1.6rem; font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.btn-play {
+  background: linear-gradient(135deg, #ffe135 0%, #f5a623 100%);
+  color: #4a2800;
+  box-shadow: 0 6px 0 #96540a, 0 12px 40px rgba(245,166,35,0.5);
+}
+.btn-play:hover { transform: translateY(2px); box-shadow: 0 4px 0 #96540a, 0 8px 20px rgba(245,166,35,0.4); }
+.btn-play:active { transform: translateY(5px); box-shadow: 0 1px 0 #96540a; }
+
+/* =========== GAME =========== */
+#game-wrapper {
+  position: relative;
+  width: min(460px, 98vw);
+  height: min(720px, 97vh);
+  overflow: hidden;
+  border-radius: 28px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.4), 0 0 0 3px rgba(255,255,255,0.25);
+  display: none;
+}
+.sky-bg {
+  position: absolute; inset: 0; bottom: 18%;
+  background: linear-gradient(180deg, #2292d8 0%, #55b8f0 55%, #aadff8 100%);
+  z-index: 0;
+}
+.cloud-wrap { position:absolute; inset:0; bottom:18%; z-index:1; overflow:hidden; pointer-events:none; }
+.c {
+  position:absolute;
+  background: rgba(255,255,255,0.88);
+  border-radius: 50px;
+  animation: drift linear infinite;
+}
+@keyframes drift { from{transform:translateX(-220px)} to{transform:translateX(530px)} }
+.ground-bg {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 18%;
+  z-index: 2;
+  overflow: hidden;
+}
+.ground-top {
+  position: absolute; top: 0; left: -5%; right: -5%;
+  height: 38%;
+  background: #5dd64a;
+  border-radius: 60% 60% 0 0 / 80% 80% 0 0;
+}
+.ground-body {
+  position: absolute; top: 30%; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, #4ab838 0%, #2e8f22 100%);
+}
+
+/* ---- HUD ---- */
+#hud {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 64px;
+  background: linear-gradient(180deg, rgba(0,20,60,0.6) 0%, transparent 100%);
+  backdrop-filter: blur(4px);
+  z-index: 30;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px 4px;
+  pointer-events: none;
+}
+.hud-pill {
+  display: flex; align-items: center; gap: 5px;
+  background: rgba(0,0,0,0.32);
+  border: 1.5px solid rgba(255,255,255,0.22);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-family: 'Baloo 2', cursive;
+  font-size: 1rem; font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  min-width: 60px;
+  justify-content: center;
+}
+.hud-pill .icon { font-size: 1.1rem; }
+.hud-score { font-size: 1.3rem; min-width: 80px; }
+#lives-bar { display: flex; gap: 3px; align-items: center; }
+.life-heart {
+  font-size: 1.35rem;
+  transition: transform 0.2s, opacity 0.2s;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+}
+.life-heart.lost { opacity: 0.2; transform: scale(0.65); filter: grayscale(1); }
+#level-badge { font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; opacity: 0.6; display: block; line-height: 1; }
+.hud-level { flex-direction: column; gap: 1px; }
+
+/* Game area */
+#game-area { position: absolute; inset: 0; z-index: 10; }
+
+#bee {
+  position: absolute;
+  width: 56px; height: 56px;
+  z-index: 20;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25));
+}
+
+/* Items */
+.item {
+  position: absolute;
+  z-index: 15;
+  pointer-events: none;
+  font-size: 2.2rem;
+  line-height: 1;
+  text-align: center;
+  animation: item-wobble 0.9s ease-in-out infinite;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));
+}
+@keyframes item-wobble { 0%,100%{transform:rotate(-7deg)} 50%{transform:rotate(7deg)} }
+.item.honey-item {
+  animation: honey-spin 1.1s linear infinite, honey-glow 0.6s ease-in-out infinite alternate;
+  font-size: 2.7rem;
+}
+@keyframes honey-spin { from{transform:rotate(0deg) scale(1.15)} to{transform:rotate(360deg) scale(1.15)} }
+@keyframes honey-glow { from{filter:drop-shadow(0 0 8px gold)} to{filter:drop-shadow(0 0 22px gold) drop-shadow(0 0 36px #ff9900)} }
+.item.bad-item {
+  animation: bad-shake 0.45s ease-in-out infinite;
+  font-size: 2.1rem;
+}
+@keyframes bad-shake { 0%,100%{transform:rotate(-9deg) scale(1)} 50%{transform:rotate(9deg) scale(1.06)} }
+
+/* Particles */
+.particle {
+  position: absolute;
+  pointer-events: none;
+  z-index: 35;
+  font-family: 'Baloo 2', cursive;
+  font-weight: 800;
+  white-space: nowrap;
+  animation: particle-up 0.95s ease-out forwards;
+}
+@keyframes particle-up {
+  0% { opacity:1; transform: scale(1) translateY(0); }
+  60% { opacity:1; }
+  100% { opacity:0; transform: scale(0.6) translateY(-65px); }
+}
+.p-plus { color:#22ff7a; text-shadow: 0 2px 8px rgba(0,200,80,0.7); font-size: 1.3rem; }
+.p-minus { color:#ff4444; text-shadow: 0 2px 10px rgba(255,0,0,0.7); font-size: 1.3rem; }
+.p-honey { color:#ffd700; text-shadow: 0 2px 14px gold, 0 0 30px #ff9900; font-size: 1.9rem; }
+.p-combo { color:#ff7700; text-shadow: 0 2px 8px rgba(255,100,0,0.7); font-size: 1.5rem; }
+.p-miss  { color:#ff7070; font-size: 1rem; opacity: 0.9; }
+
+/* Flash */
+#flash {
+  position: absolute; inset: 0; z-index: 40;
+  pointer-events: none; opacity: 0;
+  border-radius: 28px;
+  transition: opacity 0.07s;
+}
+#flash.red  { background: radial-gradient(ellipse, rgba(255,40,40,0.42) 0%, transparent 72%); }
+#flash.gold { background: radial-gradient(ellipse, rgba(255,230,0,0.5) 0%, transparent 72%); }
+#honey-flash {
+  position: absolute; inset: 0; z-index: 38;
+  pointer-events: none; opacity: 0;
+  background: radial-gradient(ellipse at 50% 40%, rgba(255,230,0,0.72) 0%, transparent 68%);
+  border-radius: 28px;
+  transition: opacity 0.08s;
+}
+
+/* Combo banner */
+#combo-banner {
+  position: absolute;
+  top: 70px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 32;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  text-align: center;
+}
+#combo-banner .combo-label {
+  font-family: 'Baloo 2', cursive;
+  font-size: 1.1rem; font-weight: 800;
+  color: #ff6600;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  background: rgba(255,255,255,0.92);
+  border-radius: 20px;
+  padding: 4px 18px;
+  border: 2px solid #ffcc00;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(255,150,0,0.3);
+}
+
+/* Score pop */
+.score-pulse { animation: score-pop 0.28s ease-out; }
+@keyframes score-pop { 0%{transform:scale(1)} 50%{transform:scale(1.4)} 100%{transform:scale(1)} }
+
+/* Level up banner */
+#levelup-banner {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  z-index: 45;
+  background: linear-gradient(135deg, #ffe135, #f5a623);
+  border-radius: 22px;
+  padding: 16px 36px;
+  font-family: 'Baloo 2', cursive;
+  font-size: 1.7rem; font-weight: 900;
+  color: #4a2800;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3), 0 0 0 3px rgba(255,255,255,0.4);
+  text-align: center;
+  pointer-events: none;
+  transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+  opacity: 0;
+}
+
+/* Mobile controls */
+#mobile-controls {
+  position: absolute;
+  bottom: 20%;
+  left: 0; right: 0;
+  display: flex; justify-content: space-between;
+  padding: 0 12px;
+  z-index: 28;
+  pointer-events: none;
+}
+.ctrl-btn {
+  width: 68px; height: 68px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.28);
+  border: 2px solid rgba(255,255,255,0.38);
+  backdrop-filter: blur(6px);
+  font-size: 2.2rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  pointer-events: all;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s, transform 0.1s;
+  color: rgba(255,255,255,0.85);
+}
+.ctrl-btn:active { background: rgba(255,255,255,0.32); transform: scale(0.88); }
+
+/* =========== OVERLAY =========== */
+#overlay {
+  position: absolute; inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  background: linear-gradient(160deg, rgba(0,20,60,0.93) 0%, rgba(0,40,100,0.93) 100%);
+  backdrop-filter: blur(12px);
+  z-index: 60;
+  gap: 12px;
+  border-radius: 28px;
+}
+.overlay-bee { font-size: 5rem; animation: float 2s ease-in-out infinite; }
+.overlay-title {
+  font-family: 'Baloo 2', cursive;
+  font-size: 2.4rem; font-weight: 900;
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(0,0,0,0.3);
+  letter-spacing: 2px;
+}
+.overlay-score {
+  font-family: 'Baloo 2', cursive;
+  font-size: 5rem; font-weight: 900;
+  color: #ffe135;
+  text-shadow: 0 5px 0 #b88a00, 0 0 40px rgba(255,220,0,0.5);
+  line-height: 1;
+}
+.overlay-label { font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.5); font-weight: 700; }
+.overlay-best { font-family: 'Baloo 2', cursive; font-size: 1.1rem; color: rgba(255,220,100,0.8); }
+.stats-row { display: flex; gap: 14px; }
+.stat-box {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 16px;
+  padding: 10px 18px;
+  text-align: center;
+}
+.stat-box .sv { font-family:'Baloo 2',cursive; font-size:1.8rem; font-weight:800; color:#fff; }
+.stat-box .sl { font-size:0.68rem; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,0.4); margin-top:2px; }
+.btn-secondary {
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.75);
+  border: 2px solid rgba(255,255,255,0.22);
+  box-shadow: none;
+  padding: 10px 32px;
+  font-size: 1.1rem;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.2); }
+</style>
+</head>
+<body>
+
+<!-- TITLE SCREEN -->
+<div id="title-screen">
+  <div class="title-bg"></div>
+  <div class="title-sun"></div>
+  <div class="title-ground"></div>
+  <div class="title-content">
+    <div class="title-emoji">🐝</div>
+    <h1 class="game-title">BĄKÓL</h1>
+    <div class="title-tagline">Zbieraj kwiatki · Unikaj śmietnika!</div>
+    <div class="title-legend">
+      <div class="legend-item">🌸 +1 pkt</div>
+      <div class="legend-item">🌻 +2 pkt</div>
+      <div class="legend-item">🌹 +3 pkt</div>
+      <div class="legend-item">💐 +4 pkt</div>
+      <div class="legend-item honey">🍯 MEGA +20 + serce!</div>
+      <div class="legend-item bad">🍔🐛 złap = -10 pkt</div>
+      <div class="legend-item bad">💩☠️ złap = -serce</div>
+      <div class="legend-item miss">🌸 upuść = -serce</div>
+      <div class="legend-item" style="border-color:rgba(100,255,100,0.4);background:rgba(0,200,80,0.15)">🍔💩 omiń = ✅ bezpieczne</div>
+    </div>
+    <button class="btn btn-play" onclick="startGame()">ZAGRAJ! ▶</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game-wrapper">
+  <div class="sky-bg"></div>
+  <div class="cloud-wrap" id="cloud-wrap"></div>
+  <div class="ground-bg">
+    <div class="ground-top"></div>
+    <div class="ground-body"></div>
+  </div>
+
+  <div id="hud">
+    <div class="hud-pill hud-score">
+      <span class="icon">🌸</span>
+      <span id="score-display">0</span>
+    </div>
+    <div id="lives-bar">
+      <div class="life-heart" id="h1">❤️</div>
+      <div class="life-heart" id="h2">❤️</div>
+      <div class="life-heart" id="h3">❤️</div>
+    </div>
+    <div class="hud-pill hud-level">
+      <span id="level-badge">poziom</span>
+      <span id="level-display">1</span>
+    </div>
+  </div>
+
+  <div id="combo-banner"><div class="combo-label" id="combo-label">COMBO x2 🔥</div></div>
+  <div id="flash"></div>
+  <div id="honey-flash"></div>
+  <div id="levelup-banner">⭐ POZIOM <span id="new-level-num">2</span> ⭐</div>
+
+  <div id="game-area">
+    <div id="bee">
+      <svg viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="12" cy="19" rx="12" ry="8" fill="rgba(190,235,255,0.82)" stroke="#99ccee" stroke-width="0.8"/>
+        <ellipse cx="44" cy="19" rx="12" ry="8" fill="rgba(190,235,255,0.82)" stroke="#99ccee" stroke-width="0.8"/>
+        <ellipse cx="28" cy="34" rx="13" ry="16" fill="#FFD700"/>
+        <rect x="15" y="24" width="26" height="6" rx="3" fill="#1a1a1a"/>
+        <rect x="15" y="34" width="26" height="6" rx="3" fill="#1a1a1a"/>
+        <circle cx="28" cy="17" r="10" fill="#FFD700"/>
+        <circle cx="23" cy="15" r="3" fill="#1a1a1a"/>
+        <circle cx="33" cy="15" r="3" fill="#1a1a1a"/>
+        <circle cx="24.2" cy="13.8" r="1.2" fill="white"/>
+        <circle cx="34.2" cy="13.8" r="1.2" fill="white"/>
+        <path d="M22 21 Q28 26 34 21" stroke="#a05c00" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        <line x1="23" y1="8" x2="17" y2="2" stroke="#555" stroke-width="1.5"/>
+        <circle cx="16" cy="1.5" r="2.2" fill="#ff88cc"/>
+        <line x1="33" y1="8" x2="39" y2="2" stroke="#555" stroke-width="1.5"/>
+        <circle cx="40" cy="1.5" r="2.2" fill="#ff88cc"/>
+        <polygon points="28,50 24.5,57 31.5,57" fill="#c07800"/>
+      </svg>
+    </div>
+  </div>
+
+  <div id="mobile-controls">
+    <div class="ctrl-btn" id="btn-left">◀</div>
+    <div class="ctrl-btn" id="btn-right">▶</div>
+  </div>
+
+  <div id="overlay">
+    <div class="overlay-bee">🐝</div>
+    <div class="overlay-title" id="overlay-title">KONIEC GRY!</div>
+    <div class="overlay-score" id="final-score">0</div>
+    <div class="overlay-label">kwiatków zebranych</div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="sv" id="stat-level">1</div><div class="sl">poziom</div></div>
+      <div class="stat-box"><div class="sv" id="stat-honey">0</div><div class="sl">miodki 🍯</div></div>
+      <div class="stat-box"><div class="sv" id="stat-combo">0</div><div class="sl">max combo</div></div>
+    </div>
+    <div class="overlay-best" id="best-disp"></div>
+    <button class="btn btn-play" onclick="startGame()">JESZCZE RAZ! 🌸</button>
+    <button class="btn btn-secondary" onclick="showTitle()">MENU GŁÓWNE</button>
+  </div>
+</div>
+
+<script>
+// ===== ITEM TABLES =====
+const GOOD = [
+  {e:'🌸',pts:1, w:30},{e:'🌼',pts:1,w:25},{e:'🌺',pts:2,w:18},
+  {e:'🌻',pts:2,w:15},{e:'🌹',pts:3,w:8},{e:'💐',pts:4,w:5},{e:'🏵️',pts:5,w:3}
+];
+const BAD_SCORE = [ // złap lub upuść → -10 pkt
+  {e:'🍔',w:12},{e:'🍟',w:10},{e:'🌭',w:8},{e:'🧁',w:7},{e:'🐛',w:10},{e:'🐌',w:8},{e:'🦟',w:7}
+];
+const BAD_LIFE = [ // złap → -serce
+  {e:'💩',w:9},{e:'🗑️',w:6},{e:'🧨',w:5},{e:'☠️',w:4}
+];
+const HONEY = {e:'🍯'}; // złap → +20 pkt + serce
+
+function wrand(pool){
+  const t=pool.reduce((s,i)=>s+i.w,0); let r=Math.random()*t;
+  for(const i of pool){r-=i.w;if(r<=0)return i;} return pool[pool.length-1];
+}
+
+// ===== STATE =====
+let score=0,lives=3,level=1,running=false,af=null;
+let items=[],spT=0,spI=100,spd=2.1;
+let bx=0,by=0,bW=56,bSpd=5.5;
+let mL=false,mR=false;
+let combo=0,cT=0,maxCombo=0,honeys=0;
+let best=parseInt(localStorage.getItem('bkl')||'0');
+let lastTS=0;
+const GR=0.82;
+
+const wrap=document.getElementById('game-wrapper');
+const ga=document.getElementById('game-area');
+const bee=document.getElementById('bee');
+const scoreEl=document.getElementById('score-display');
+const lvlEl=document.getElementById('level-display');
+const flashEl=document.getElementById('flash');
+const hFlash=document.getElementById('honey-flash');
+const comboBan=document.getElementById('combo-banner');
+const comboLbl=document.getElementById('combo-label');
+const lvlBan=document.getElementById('levelup-banner');
+const overlay=document.getElementById('overlay');
+
+function gw(){return wrap.offsetWidth||460;}
+function gh(){return wrap.offsetHeight||720;}
+
+function updScore(){
+  scoreEl.textContent=score;
+  scoreEl.classList.remove('score-pulse');
+  void scoreEl.offsetWidth;
+  scoreEl.classList.add('score-pulse');
+}
+function updLives(){
+  for(let i=1;i<=3;i++) document.getElementById('h'+i).classList.toggle('lost',i>lives);
+}
+function updLevel(){lvlEl.textContent=level;}
+
+function flash(cls,ms=220){
+  flashEl.className=cls; flashEl.style.opacity='1';
+  setTimeout(()=>flashEl.style.opacity='0',ms);
+}
+function honeyFlash(){
+  hFlash.style.opacity='1';
+  setTimeout(()=>hFlash.style.opacity='0',600);
+}
+function showLvlUp(lv){
+  document.getElementById('new-level-num').textContent=lv;
+  lvlBan.style.opacity='1'; lvlBan.style.transform='translate(-50%,-50%) scale(1)';
+  setTimeout(()=>{lvlBan.style.opacity='0';lvlBan.style.transform='translate(-50%,-50%) scale(0)';},1300);
+}
+
+function ptcl(x,y,txt,cls){
+  const p=document.createElement('div');
+  p.className='particle '+cls;
+  p.textContent=txt;
+  p.style.left=x+'px'; p.style.top=y+'px';
+  ga.appendChild(p);
+  setTimeout(()=>p.remove(),1000);
+}
+
+function shakeBee(){
+  bee.style.filter='drop-shadow(0 4px 8px rgba(0,0,0,0.25)) hue-rotate(130deg) brightness(1.9)';
+  let s=[10,-10,7,-7,4,0],t=0;
+  const iv=setInterval(()=>{
+    if(t>=s.length){clearInterval(iv);bee.style.filter='drop-shadow(0 4px 8px rgba(0,0,0,0.25))';bee.style.transform='';return;}
+    bee.style.transform=`translateX(${s[t]}px)`;t++;
+  },45);
+}
+function honeyBee(){
+  bee.style.filter='drop-shadow(0 0 20px gold) brightness(1.6)';
+  setTimeout(()=>bee.style.filter='drop-shadow(0 4px 8px rgba(0,0,0,0.25))',900);
+}
+
+function setupClouds(){
+  const cw=document.getElementById('cloud-wrap'); cw.innerHTML='';
+  [{w:110,h:36,t:'7%',dur:'30s',dl:'0s'},{w:78,h:26,t:'20%',dur:'22s',dl:'-9s'},
+   {w:145,h:46,t:'4%',dur:'38s',dl:'-16s'},{w:62,h:20,t:'30%',dur:'19s',dl:'-6s'}].forEach(c=>{
+    const el=document.createElement('div');
+    el.className='c';
+    el.style.cssText=`width:${c.w}px;height:${c.h}px;top:${c.t};animation-duration:${c.dur};animation-delay:${c.dl};`;
+    cw.appendChild(el);
+  });
+}
+
+function setupStars(){
+  const ts=document.getElementById('title-screen');
+  for(let i=0;i<38;i++){
+    const s=document.createElement('div'); s.className='star';
+    const sz=Math.random()*3+1;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*60}%;animation-delay:${Math.random()*3}s;animation-duration:${1.5+Math.random()*2}s`;
+    ts.appendChild(s);
+  }
+}
+setupStars();
+
+// ===== SPAWN =====
+function spawnItem(){
+  const W=gw();
+  const r=Math.random();
+  const badCh=0.12+level*0.018;
+  const lifeCh=0.04+level*0.008;
+  const honCh=0.028;
+
+  let def,itype;
+  if(r<honCh){         def=HONEY;    itype='honey';}
+  else if(r<honCh+lifeCh){ def=wrand(BAD_LIFE); itype='life';}
+  else if(r<honCh+lifeCh+badCh){ def=wrand(BAD_SCORE); itype='score';}
+  else{                def=wrand(GOOD);  itype='flower';}
+
+  const el=document.createElement('div');
+  el.className='item'+(itype==='honey'?' honey-item':(itype==='life'||itype==='score')?' bad-item':'');
+  el.textContent=def.e;
+  const x=Math.random()*(W-48)+10;
+  el.style.left=x+'px'; el.style.top='-50px';
+  el.dataset.x=x; el.dataset.y=-50;
+  el.dataset.pts=def.pts||0;
+  el.dataset.t=itype;
+  el.dataset.s=(spd+Math.random()*1.2+(itype==='honey'?-0.3:0)).toFixed(2);
+  ga.appendChild(el); items.push(el);
+}
+
+// ===== LOOP =====
+function loop(ts){
+  if(!running) return;
+  const dt=Math.min((ts-lastTS)/16.67,3); lastTS=ts;
+  const W=gw(),H=gh(),gY=H*GR;
+
+  if(mL) bx=Math.max(0,bx-bSpd*dt);
+  if(mR) bx=Math.min(W-bW,bx+bSpd*dt);
+  bee.style.left=bx+'px'; bee.style.top=by+'px';
+
+  if(cT>0){cT-=dt;if(cT<=0){combo=0;comboBan.style.opacity='0';}}
+
+  spT+=dt;
+  if(spT>=spI){spT=0;spawnItem();}
+
+  const nLv=1+Math.floor(score/20);
+  if(nLv>level){
+    level=nLv; spd=2.1+(level-1)*0.32;
+    spI=Math.max(42,100-(level-1)*9);
+    bSpd=5.5+(level-1)*0.25;
+    updLevel(); showLvlUp(level);
+  }
+
+  for(let i=items.length-1;i>=0;i--){
+    const f=items[i];
+    let y=parseFloat(f.dataset.y)+parseFloat(f.dataset.s)*dt;
+    f.dataset.y=y; f.style.top=y+'px';
+    const fx=parseFloat(f.dataset.x), fw=30, ft=f.dataset.t;
+
+    const hit=(y+fw>by+14&&y<by+50&&fx+fw>bx+12&&fx<bx+bW-12);
+
+    if(hit){
+      if(ft==='honey'){
+        score+=20; if(lives<3){lives++;updLives();}
+        honeys++; combo=0; cT=0; comboBan.style.opacity='0';
+        ptcl(fx,y-12,'🍯 MEGA +20! ❤️','p-honey');
+        honeyFlash(); honeyBee(); updScore();
+      } else if(ft==='life'){
+        lives--; combo=0; cT=0; comboBan.style.opacity='0';
+        ptcl(fx,y,'💥 -SERCE','p-minus');
+        flash('red'); shakeBee(); updLives();
+        if(lives<=0){endGame();return;}
+      } else if(ft==='score'){
+        score=Math.max(0,score-10); combo=0; cT=0; comboBan.style.opacity='0';
+        ptcl(fx,y,'-10 🤢','p-minus');
+        flash('red',180); shakeBee(); updScore();
+      } else {
+        const pts=parseInt(f.dataset.pts)||1;
+        combo++; cT=90; if(combo>maxCombo) maxCombo=combo;
+        let earn=pts;
+        if(combo>2){earn=pts*Math.min(combo,10);comboLbl.textContent=`COMBO x${combo} 🔥`;comboBan.style.opacity='1';ptcl(fx+18,y-16,`+${earn} 🔥`,'p-combo');}
+        else ptcl(fx+10,y-8,`+${earn}`,'p-plus');
+        score+=earn; updScore();
+      }
+      f.remove(); items.splice(i,1); continue;
+    }
+
+    if(y>gY+14){
+      if(ft==='flower'){
+        // Upuściłeś kwiatek → tracisz serce
+        lives--; combo=0; cT=0; comboBan.style.opacity='0';
+        ptcl(fx,gY-30,'🌸 puf!','p-miss');
+        flash('red',200); updLives();
+        if(lives<=0){endGame();return;}
+      }
+      // score_bad i life_bad które ominąłeś → znikają bez kary, to dobrze!
+      f.remove(); items.splice(i,1);
+    }
+  }
+  af=requestAnimationFrame(loop);
+}
+
+// ===== START / END =====
+function startGame(){
+  document.getElementById('title-screen').style.display='none';
+  wrap.style.display='block'; overlay.style.display='none';
+  lvlBan.style.opacity='0'; lvlBan.style.transform='translate(-50%,-50%) scale(0)';
+  score=0;lives=3;level=1;items=[];spT=0;spI=100;spd=2.1;
+  combo=0;cT=0;maxCombo=0;honeys=0;mL=false;mR=false;
+  bx=gw()/2-bW/2; by=gh()*GR-64;
+  bee.style.filter='drop-shadow(0 4px 8px rgba(0,0,0,0.25))';
+  bee.style.transform='';
+  document.querySelectorAll('.item,.particle').forEach(e=>e.remove());
+  setupClouds(); updScore(); updLives(); updLevel();
+  comboBan.style.opacity='0';
+  running=true; if(af) cancelAnimationFrame(af);
+  lastTS=performance.now(); af=requestAnimationFrame(loop);
+}
+
+function showTitle(){
+  overlay.style.display='none'; wrap.style.display='none';
+  document.getElementById('title-screen').style.display='flex';
+  running=false; if(af) cancelAnimationFrame(af);
+}
+
+function endGame(){
+  running=false; cancelAnimationFrame(af);
+  overlay.style.display='flex';
+  document.getElementById('final-score').textContent=score;
+  document.getElementById('stat-level').textContent=level;
+  document.getElementById('stat-honey').textContent=honeys;
+  document.getElementById('stat-combo').textContent=maxCombo;
+  if(score>best){
+    best=score; localStorage.setItem('bkl',best);
+    document.getElementById('overlay-title').textContent='🏆 NOWY REKORD!';
+    document.getElementById('best-disp').textContent='';
+  } else {
+    document.getElementById('overlay-title').textContent='KONIEC GRY! 🐝';
+    document.getElementById('best-disp').textContent=`🏆 Rekord: ${best} kwiatków`;
+  }
+}
+
+// ===== CONTROLS =====
+document.addEventListener('keydown',e=>{
+  if(!running)return;
+  if(e.key==='ArrowLeft'||e.key==='a')mL=true;
+  if(e.key==='ArrowRight'||e.key==='d')mR=true;
+});
+document.addEventListener('keyup',e=>{
+  if(e.key==='ArrowLeft'||e.key==='a')mL=false;
+  if(e.key==='ArrowRight'||e.key==='d')mR=false;
+});
+wrap.addEventListener('mousemove',e=>{
+  if(!running)return;
+  const r=wrap.getBoundingClientRect();
+  bx=Math.max(0,Math.min(gw()-bW,e.clientX-r.left-bW/2));
+});
+const bL=document.getElementById('btn-left'),bR=document.getElementById('btn-right');
+bL.addEventListener('touchstart',e=>{e.preventDefault();mL=true;},{passive:false});
+bL.addEventListener('touchend',e=>{e.preventDefault();mL=false;},{passive:false});
+bR.addEventListener('touchstart',e=>{e.preventDefault();mR=true;},{passive:false});
+bR.addEventListener('touchend',e=>{e.preventDefault();mR=false;},{passive:false});
+bL.addEventListener('mousedown',()=>mL=true); bL.addEventListener('mouseup',()=>mL=false);
+bR.addEventListener('mousedown',()=>mR=true); bR.addEventListener('mouseup',()=>mR=false);
+wrap.addEventListener('touchmove',e=>{
+  if(!running)return; e.preventDefault();
+  const r=wrap.getBoundingClientRect();
+  bx=Math.max(0,Math.min(gw()-bW,e.touches[0].clientX-r.left-bW/2));
+},{passive:false});
+</script>
+</body>
+</html>
